@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <util:properties id="tccRedis" location="classpath:tccredis.properties"/>
 
     <bean class="org.mengyun.tcctransaction.spring.recover.DefaultRecoverConfig">
         <property name="maxRetryCount" value="30"/>
@@ -61,8 +66,8 @@
 
     <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
     <constructor-arg index="0" ref="jedisPoolConfig"/>
-    <constructor-arg index="1" value="127.0.0.1"/>
-    <constructor-arg index="2" value="6379" type="int"/>
+    <constructor-arg index="1" value="#{tccRedis['redis.ip']}"/>
+    <constructor-arg index="2" value="#{tccRedis['redis.port']}" type="int"/>
     <constructor-arg index="3" value="1000" type="int"/>
     <constructor-arg index="4" type="java.lang.String">
     <null/>

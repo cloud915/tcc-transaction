@@ -4,6 +4,10 @@
 
 <web-app>
     <display-name>Sample Dubbo Order</display-name>
+    <context-param>
+        <param-name>webAppRootKey</param-name>
+        <param-value>tcc-transaction-dubbo-order</param-value>
+    </context-param>
 
     <context-param>
         <param-name>contextConfigLocation</param-name>

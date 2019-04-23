@@ -4,6 +4,10 @@
 
 <web-app>
     <display-name>Sample Dubbo Capital</display-name>
+    <context-param>
+        <param-name>webAppRootKey</param-name>
+        <param-value>tcc-transaction-dubbo-capital</param-value>
+    </context-param>
 
     <context-param>
         <param-name>contextConfigLocation</param-name>

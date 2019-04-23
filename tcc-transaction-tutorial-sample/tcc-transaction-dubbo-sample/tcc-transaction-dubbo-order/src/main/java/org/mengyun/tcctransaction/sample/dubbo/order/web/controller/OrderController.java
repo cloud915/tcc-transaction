@@ -27,16 +27,16 @@ import java.util.List;
 @Controller
 @RequestMapping("")
 public class OrderController {
-
+    // 操作全局订单
     @Autowired
     PlaceOrderServiceImpl placeOrderService;
-
+    // 查询产品信息
     @Autowired
     ProductRepository productRepository;
-
+    // 查询账户信息
     @Autowired
     AccountServiceImpl accountService;
-
+    // 此处用于查询订单信息
     @Autowired
     OrderServiceImpl orderService;
 

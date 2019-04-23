@@ -35,6 +35,8 @@
         <property name="acquireIncrement" value="#{tccjdbc['c3p0.acquireIncrement']}"/>
         <property name="maxIdleTime" value="#{tccjdbc['c3p0.maxIdleTime']}"/>
         <property name="checkoutTimeout" value="#{tccjdbc['c3p0.checkoutTimeout']}"/>
+        <property name="testConnectionOnCheckin" value="false"/>
+        <property name="testConnectionOnCheckout" value="true"/>
     </bean>
 
     <bean id="kryoSerializer" class="org.mengyun.tcctransaction.serializer.KryoPoolSerializer"/>
