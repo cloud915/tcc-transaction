@@ -46,6 +46,7 @@ public class TransferServiceTest extends AbstractTestCase {
         Assert.assertTrue(subAccountFrom.getStatus() == AccountStatus.NORMAL.getId());
         Assert.assertTrue(subAccountTo.getStatus() == AccountStatus.NORMAL.getId());
 
+        System.out.println("subAccountFrom.getBalanceAmount()="+subAccountFrom.getBalanceAmount());
         Assert.assertTrue(subAccountFrom.getBalanceAmount() == 50);
         Assert.assertTrue(subAccountTo.getBalanceAmount() == 250);
     }

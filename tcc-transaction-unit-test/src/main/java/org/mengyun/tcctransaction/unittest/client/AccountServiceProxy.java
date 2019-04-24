@@ -46,7 +46,7 @@ public class AccountServiceProxy {
 
 
     public void transferTo(final TransactionContext transactionContext, final long accountId, final int amount) {
-
+        System.out.println("invoke proxy transferTo");
         Future<Boolean> future = this.executorService
                 .submit(new Callable<Boolean>() {
                     @Override

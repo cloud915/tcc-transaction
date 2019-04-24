@@ -14,7 +14,7 @@ public class TccTransactionConfigurator implements TransactionConfigurator {
 
     @Autowired
     private TransactionRepository transactionRepository;
-
+    // 直接实例化
     private TransactionManager transactionManager = new TransactionManager(this);
 
     @Override
