@@ -9,6 +9,7 @@ import org.mengyun.tcctransaction.TransactionRepository;
 import org.mengyun.tcctransaction.api.TransactionXid;
 
 import javax.transaction.xa.Xid;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +35,14 @@ public abstract class CachableTransactionRepository implements TransactionReposi
     @Override
     public int update(Transaction transaction) {
         int result = doUpdate(transaction);
+
+        System.out.println("\t\t"
+                +"GlobalTransactionId=>>>>" + TransactionXid.byteArrayToUUID(transaction.getXid().getGlobalTransactionId()) + "<<<<,"
+                + "BranchQualifier=>>>>" + TransactionXid.byteArrayToUUID(transaction.getXid().getBranchQualifier())+ "<<<<,"
+                + "TransactionType=" + transaction.getTransactionType() + ","
+                + "Status=" + transaction.getStatus().name() + ","
+                + "Version=" + transaction.getVersion());
+
         if (result > 0) {
             putToCache(transaction);
         } else {

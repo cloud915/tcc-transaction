@@ -26,9 +26,9 @@
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
           destroy-method="close">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="jdbc:mysql://127.0.0.1:3306/test"/>
-        <property name="username" value="root"/>
-        <property name="password" value=""/>
+        <property name="url" value="jdbc:mysql://47.105.168.48:3306/TCC"/>
+        <property name="username" value="tccTrans"/>
+        <property name="password" value="pwd123"/>
     </bean>
 
     <!--<bean id="transactionRepository"-->

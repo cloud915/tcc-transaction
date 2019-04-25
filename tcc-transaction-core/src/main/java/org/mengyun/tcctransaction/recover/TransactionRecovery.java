@@ -25,10 +25,11 @@ public class TransactionRecovery {
     }
 
     public void startRecover() {
-
+        System.out.println("TransactionRecovery is start");
         List<Transaction> transactions = loadErrorTransactions();
 
         recoverErrorTransactions(transactions);
+        System.out.println("TransactionRecovery is end");
     }
 
     private List<Transaction> loadErrorTransactions() {
@@ -68,6 +69,7 @@ public class TransactionRecovery {
                 transaction.addRetriedCount();
 
                 if (transaction.getStatus().equals(TransactionStatus.CONFIRMING)) {
+                    System.out.println("TransactionRecovery is invoke transaction's commit");
                     transaction.changeStatus(TransactionStatus.CONFIRMING);
                     transactionConfigurator.getTransactionRepository().update(transaction);
                     transaction.commit();
@@ -75,9 +77,11 @@ public class TransactionRecovery {
                 } else {
                     transaction.changeStatus(TransactionStatus.CANCELLING);
                     transactionConfigurator.getTransactionRepository().update(transaction);
+                    System.out.println("TransactionRecovery is invoke transaction's rollback");
                     transaction.rollback();
                 }
 
+                System.out.println("TransactionRecovery is delete transaction");
                 transactionConfigurator.getTransactionRepository().delete(transaction);
             } catch (Throwable e) {
                 logger.warn(String.format("recover failed, txid:%s, status:%s,retried count:%d", transaction.getXid(), transaction.getStatus().getId(), transaction.getRetriedCount()), e);

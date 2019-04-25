@@ -13,11 +13,11 @@ import org.springframework.core.Ordered;
  */
 @Aspect
 public class TccCompensableAspect implements Ordered {
-
+    // order较小，先执行
     private int order = Ordered.HIGHEST_PRECEDENCE;
 
     private CompensableTransactionInterceptor compensableTransactionInterceptor;
-
+    // 只针对@Compensable注解的方法
     @Pointcut("@annotation(org.mengyun.tcctransaction.Compensable)")
     public void compensableService() {
 
@@ -25,7 +25,7 @@ public class TccCompensableAspect implements Ordered {
 
     @Around("compensableService()")
     public Object interceptCompensableMethod(ProceedingJoinPoint pjp) throws Throwable {
-
+        // 封装核心处理流程
         return compensableTransactionInterceptor.interceptCompensableMethod(pjp);
     }
 

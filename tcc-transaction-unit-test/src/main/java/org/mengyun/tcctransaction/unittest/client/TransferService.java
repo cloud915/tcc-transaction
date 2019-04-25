@@ -34,7 +34,7 @@ public class TransferService {
     @Transactional
     public void transfer(long fromAccountId, long toAccountId, int amount) {
 
-        System.out.println("transfer called");
+        System.out.println("[TransferService] transfer called");
 
         SubAccount subAccount = subAccountRepository.findById(fromAccountId);
 
@@ -43,8 +43,10 @@ public class TransferService {
         subAccount.setBalanceAmount(subAccount.getBalanceAmount() - amount);
 
         accountService.transferTo(null, toAccountId, amount);
+        System.out.println("[TransferService] transfer called end");
     }
 
+    // 串行多节点调用，分支事务逐级向下开启
     @Compensable(confirmMethod = "transferConfirm", cancelMethod = "transferCancel")
     public void transferWithMultipleTier(long fromAccountId, long toAccountId, int amount) {
 
@@ -58,7 +60,7 @@ public class TransferService {
 
         accountService.transferToWithMultipleTier(null, toAccountId, amount);
     }
-
+    // 并行多节点调用，分支事务同级别
     @Compensable(confirmMethod = "transferWithMultipleConsumerConfirm", cancelMethod = "transferWithMultipleConsumerCancel")
     @Transactional
     public void transferWithMultipleConsumer(long fromAccountId, long toAccountId, int amount) {
@@ -66,7 +68,6 @@ public class TransferService {
         accountService.transferFrom(null, fromAccountId, amount);
         accountService.transferTo(null, toAccountId, amount);
     }
-
     @Compensable
     public void transferWithOnlyTryAndMultipleConsumer(long fromAccountId, long toAccountId, int amount) {
         System.out.println("transferWithOnlyTryAndMultipleConsumer called");
@@ -81,14 +82,15 @@ public class TransferService {
     }
 
     public void transferConfirm(long fromAccountId, long toAccountId, int amount) {
-        System.out.println("transferConfirm called");
+        System.out.println("TransferService transferConfirm called");
         SubAccount subAccount = subAccountRepository.findById(fromAccountId);
         subAccount.setStatus(AccountStatus.NORMAL.getId());
+        System.out.println("TransferService transferConfirm called end");
     }
 
     public void transferCancel(long fromAccountId, long toAccountId, int amount) {
 
-        System.out.println("transferCancel called");
+        System.out.println("[TransferService] transferCancel called");
 
         SubAccount subAccount = subAccountRepository.findById(fromAccountId);
 
@@ -97,6 +99,7 @@ public class TransferService {
         }
 
         subAccount.setStatus(AccountStatus.NORMAL.getId());
+        System.out.println("[TransferService] transferCancel called end");
     }
 
     public void transferWithMultipleConsumerConfirm(long fromAccountId, long toAccountId, int amount) {

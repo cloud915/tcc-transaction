@@ -37,10 +37,11 @@ public class AccountServiceImpl implements AccountService {
     @Compensable(confirmMethod = "transferToConfirm", cancelMethod = "transferToCancel")
     public void transferTo(TransactionContext transactionContext, long accountId, int amount) {
 
-        System.out.println("transferTo called");
+        System.out.println("[AccountService] transferTo called");
         SubAccount subAccount = subAccountRepository.findById(accountId);
         subAccount.setStatus(AccountStatus.TRANSFERING.getId());
         subAccount.setBalanceAmount(subAccount.getBalanceAmount() + amount);
+        System.out.println("[AccountService] transferTo called end");
     }
 
     @Override
@@ -80,13 +81,13 @@ public class AccountServiceImpl implements AccountService {
 
 
     public void transferFromConfirm(TransactionContext transactionContext, long accountId, int amount) {
-        System.out.println("transferFromConfirm called");
+        System.out.println("AccountService transferFromConfirm called");
         SubAccount subAccount = subAccountRepository.findById(accountId);
         subAccount.setStatus(AccountStatus.NORMAL.getId());
     }
 
     public void transferFromCancel(TransactionContext transactionContext, long accountId, int amount) {
-        System.out.println("transferFromCancel called");
+        System.out.println("AccountService transferFromCancel called");
         SubAccount subAccount = subAccountRepository.findById(accountId);
 
         if (subAccount.getStatus() == AccountStatus.TRANSFERING.getId()) {
@@ -97,14 +98,15 @@ public class AccountServiceImpl implements AccountService {
     }
 
     public void transferToConfirm(TransactionContext transactionContext, long accountId, int amount) {
-        System.out.println("transferToConfirm called");
+        System.out.println("[AccountService] transferToConfirm called");
 
         if(UnitTest.CONFIRMING_EXCEPTION) {
-            throw new RuntimeException("transferToConfirm confirm failed.");
+            throw new RuntimeException("AccountService transferToConfirm confirm failed.");
         }
 
         SubAccount subAccount = subAccountRepository.findById(accountId);
         subAccount.setStatus(AccountStatus.NORMAL.getId());
+        System.out.println("[AccountService] transferToConfirm called end");
     }
 
     public void transferToCancel(TransactionContext transactionContext, long accountId, int amount) {

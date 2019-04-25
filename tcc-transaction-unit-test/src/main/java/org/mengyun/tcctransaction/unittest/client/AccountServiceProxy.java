@@ -36,6 +36,8 @@ public class AccountServiceProxy {
                 .submit(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
+                        // TODO debug时，这里的断点有时会导致test不通过，猜测是TransactionRecovery流程提前处理了持久化的事务信息，
+                        // TODO 正常事务中在update操作时找到不数据抛出异常
                         accountService.transferToWithMultipleTier(transactionContext, accountId, amount);
                         return true;
                     }
@@ -48,7 +50,7 @@ public class AccountServiceProxy {
     }
 
     public void transferTo(final TransactionContext transactionContext, final long accountId, final int amount) {
-
+        System.out.println("AccountServiceProxy transferTo called,transactionContextStatus="+transactionContext.getStatus());
         Future<Boolean> future = this.executorService
                 .submit(new Callable<Boolean>() {
                     @Override
@@ -92,6 +94,7 @@ public class AccountServiceProxy {
 
     private void handleResult(Future<Boolean> future) {
         while (!future.isDone()) {
+            //System.out.println("try get future result");
             try {
                 Thread.sleep(300);
             } catch (InterruptedException e) {
