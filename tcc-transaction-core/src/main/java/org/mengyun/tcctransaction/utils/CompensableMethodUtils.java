@@ -31,8 +31,12 @@ public class CompensableMethodUtils {
 
         if ((propagation.equals(Propagation.REQUIRED) && !isTransactionActive && transactionContext == null) ||
                 propagation.equals(Propagation.REQUIRES_NEW)) {
+            // （传播行为REQUIRED、事务未开启、上下文为空) || (事务行为REQUIRES_NEW）
             return MethodType.ROOT;
-        } else if ((propagation.equals(Propagation.REQUIRED) || propagation.equals(Propagation.MANDATORY)) && !isTransactionActive && transactionContext != null) {
+        } else if ((propagation.equals(Propagation.REQUIRED) || propagation.equals(Propagation.MANDATORY))
+                && !isTransactionActive
+                && transactionContext != null) {
+            // (传播REQUIRED||传播MANDATORY)&&事务未开启&&上下文不为空
             return MethodType.PROVIDER;
         } else {
             return MethodType.NORMAL;
@@ -54,7 +58,7 @@ public class CompensableMethodUtils {
             return MethodType.NORMAL;
         }
     }
-
+    // 参数变化，直接反射拿到参数列表类型的列表；找到上下文参数的索引
     public static int getTransactionContextParamPosition(Class<?>[] parameterTypes) {
 
         int i = -1;

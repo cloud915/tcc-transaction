@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.Pointcut;
 
 /**
  * Created by changmingxie on 10/30/15.
+ * 子类的order标记先执行
  */
 @Aspect
 public abstract class CompensableTransactionAspect {
@@ -16,7 +17,6 @@ public abstract class CompensableTransactionAspect {
     public void setCompensableTransactionInterceptor(CompensableTransactionInterceptor compensableTransactionInterceptor) {
         this.compensableTransactionInterceptor = compensableTransactionInterceptor;
     }
-
     @Pointcut("@annotation(org.mengyun.tcctransaction.api.Compensable)")
     public void compensableService() {
 

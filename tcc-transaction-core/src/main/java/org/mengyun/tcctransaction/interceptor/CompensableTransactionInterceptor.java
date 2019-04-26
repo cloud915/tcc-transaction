@@ -36,15 +36,18 @@ public class CompensableTransactionInterceptor {
         Method method = CompensableMethodUtils.getCompensableMethod(pjp);
 
         Compensable compensable = method.getAnnotation(Compensable.class);
+        // 获取事务传播类别
         Propagation propagation = compensable.propagation();
+        // 获取事务上下文实例
         TransactionContext transactionContext = FactoryBuilder.factoryOf(compensable.transactionContextEditor()).getInstance().get(pjp.getTarget(), method, pjp.getArgs());
-
+        // 标记事务开启
         boolean isTransactionActive = transactionManager.isTransactionActive();
 
+        // 判定 是否为合法的 事务上下文
         if (!TransactionUtils.isLegalTransactionContext(isTransactionActive, propagation, transactionContext)) {
             throw new SystemException("no active compensable transaction while propagation is mandatory for method " + method.getName());
         }
-
+        // 根据传播行为、事务活动状态、上下文，得出方法类型
         MethodType methodType = CompensableMethodUtils.calculateMethodType(propagation, isTransactionActive, transactionContext);
 
         switch (methodType) {

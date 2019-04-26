@@ -7,12 +7,14 @@ import org.aspectj.lang.annotation.Pointcut;
 
 /**
  * Created by changmingxie on 11/8/15.
+ * 子类的order标记后执行
  */
 @Aspect
 public abstract class ResourceCoordinatorAspect {
 
     private ResourceCoordinatorInterceptor resourceCoordinatorInterceptor;
 
+    // 去掉参数类型的拦截
     @Pointcut("@annotation(org.mengyun.tcctransaction.api.Compensable)")
     public void transactionContextCall() {
 

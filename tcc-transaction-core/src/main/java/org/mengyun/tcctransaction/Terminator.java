@@ -19,7 +19,7 @@ public class Terminator implements Serializable {
     public Terminator() {
 
     }
-
+    // 执行参与者中注册的方法
     public Object invoke(TransactionContext transactionContext, InvocationContext invocationContext, Class<? extends TransactionContextEditor> transactionContextEditorClass) {
 
 

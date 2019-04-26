@@ -19,9 +19,9 @@ public class Transaction implements Serializable {
     private static final long serialVersionUID = 7291423944314337931L;
 
     private TransactionXid xid;
-
+    // 事务状态
     private TransactionStatus status;
-
+    // 事务类型
     private TransactionType transactionType;
 
     private volatile int retriedCount = 0;
@@ -33,7 +33,7 @@ public class Transaction implements Serializable {
     private long version = 1;
 
     private List<Participant> participants = new ArrayList<Participant>();
-
+    // 附加信息
     private Map<String, Object> attachments = new ConcurrentHashMap<String, Object>();
 
     public Transaction() {

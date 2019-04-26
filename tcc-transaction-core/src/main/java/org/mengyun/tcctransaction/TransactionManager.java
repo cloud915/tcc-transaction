@@ -14,9 +14,9 @@ import java.util.LinkedList;
 public class TransactionManager {
 
     static final Logger logger = Logger.getLogger(TransactionManager.class.getSimpleName());
-
+    // 去掉TransactionConfigurator，直接使用TransactionRepository
     private TransactionRepository transactionRepository;
-
+    // 由栈ThreadLocal<Deque<Transaction>> 代替ThreadLocal<Transaction>；作用一样
     private static final ThreadLocal<Deque<Transaction>> CURRENT = new ThreadLocal<Deque<Transaction>>();
 
     public void setTransactionRepository(TransactionRepository transactionRepository) {
@@ -24,14 +24,15 @@ public class TransactionManager {
     }
 
     public void begin() {
-
+        // 开启事务，持久化、缓存
         Transaction transaction = new Transaction(TransactionType.ROOT);
         transactionRepository.create(transaction);
+        // 入栈，且
         registerTransaction(transaction);
     }
 
     public void propagationNewBegin(TransactionContext transactionContext) {
-
+        // 开启分支事务，携带上下文，持久化、缓存
         Transaction transaction = new Transaction(transactionContext);
         transactionRepository.create(transaction);
 
@@ -39,10 +40,12 @@ public class TransactionManager {
     }
 
     public void propagationExistBegin(TransactionContext transactionContext) throws NoExistedTransactionException {
+        // 分支事务状态变更
         Transaction transaction = transactionRepository.findByXid(transactionContext.getXid());
 
         if (transaction != null) {
             transaction.changeStatus(TransactionStatus.valueOf(transactionContext.getStatus()));
+            // 入栈，propagationExistBegin执行完成后，后面会带有出栈操作
             registerTransaction(transaction);
         } else {
             throw new NoExistedTransactionException();
@@ -50,7 +53,7 @@ public class TransactionManager {
     }
 
     public void commit() {
-
+        // 提交事务：变革事务状态、执行commit、删除事务信息的持久化、缓存
         Transaction transaction = getCurrentTransaction();
 
         transaction.changeStatus(TransactionStatus.CONFIRMING);
@@ -79,7 +82,7 @@ public class TransactionManager {
     }
 
     public void rollback() {
-
+        // 提交事务：变革事务状态、执行rollback、删除事务信息的持久化、缓存
         Transaction transaction = getCurrentTransaction();
         transaction.changeStatus(TransactionStatus.CANCELLING);
 
@@ -93,7 +96,7 @@ public class TransactionManager {
             throw new CancellingException(rollbackException);
         }
     }
-
+    // 入栈，方法调用与出栈成对出现
     private void registerTransaction(Transaction transaction) {
 
         if (CURRENT.get() == null) {
@@ -102,12 +105,12 @@ public class TransactionManager {
 
         CURRENT.get().push(transaction);
     }
-
+    // 出栈，方法调用与入栈成对出现
     public void cleanAfterCompletion() {
         CURRENT.get().pop();
     }
 
-
+    // 注册参与者
     public void enlistParticipant(Participant participant) {
         Transaction transaction = this.getCurrentTransaction();
         transaction.enlistParticipant(participant);

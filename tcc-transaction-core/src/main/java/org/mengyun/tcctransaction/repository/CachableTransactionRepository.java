@@ -7,6 +7,7 @@ import org.mengyun.tcctransaction.OptimisticLockException;
 import org.mengyun.tcctransaction.Transaction;
 import org.mengyun.tcctransaction.TransactionRepository;
 import org.mengyun.tcctransaction.api.TransactionXid;
+import org.mengyun.tcctransaction.utils.ByteUtils;
 
 import javax.transaction.xa.Xid;
 import java.util.Date;
@@ -34,6 +35,8 @@ public abstract class CachableTransactionRepository implements TransactionReposi
     @Override
     public int update(Transaction transaction) {
         int result = doUpdate(transaction);
+        System.out.println("GlobalTransactionId="+TransactionXid.byteArrayToUUID(transaction.getXid().getGlobalTransactionId())
+                            +"\t BranchQualifier="+TransactionXid.byteArrayToUUID(transaction.getXid().getBranchQualifier()));
         if (result > 0) {
             putToCache(transaction);
         } else {
