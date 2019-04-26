@@ -6,6 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by changming.xie on 2/23/17.
+ *
+ * 按类型单例
  */
 public final class FactoryBuilder {
 
