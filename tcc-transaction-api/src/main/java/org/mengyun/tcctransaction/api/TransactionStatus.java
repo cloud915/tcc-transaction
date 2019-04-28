@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 /**
  * Created by changmingxie on 10/28/15.
+ *
+ * 事务状态：T\C\C
  */
 public enum TransactionStatus {
 

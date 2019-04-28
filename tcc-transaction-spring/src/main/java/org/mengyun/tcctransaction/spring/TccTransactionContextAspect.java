@@ -38,9 +38,9 @@ public class TccTransactionContextAspect implements Ordered {
 
     @Around("transactionContextCall()")
     public void interceptTransactionContextMethod(ProceedingJoinPoint pjp) throws Throwable {
-        // 如果TccCompensableAspect中开启了事务，此处会有transaction
+        // 获取当前线程的事务信息对象（如果TccCompensableAspect中开启了事务，此处会有transaction）
         Transaction transaction = transactionConfigurator.getTransactionManager().getCurrentTransaction();
-        // 只有第一阶段流程，才会进入参与者处理【root事务、分支事务的第一阶段】
+        // 只有第一阶段流程，才会进入参与者处理【root事务、分支事务的第一阶段】（第一阶段，事务刚刚开启，transaction肯定为null）
         if (transaction != null && transaction.getStatus().equals(TransactionStatus.TRYING)) {
             // 如果是事务的第一阶段，从参数列中拿到TransactionContext
             TransactionContext transactionContext = CompensableMethodUtils.getTransactionContextFromArgs(pjp.getArgs());

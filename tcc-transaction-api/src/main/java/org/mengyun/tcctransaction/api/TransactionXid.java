@@ -8,6 +8,8 @@ import java.util.UUID;
 
 /**
  * Created by changmingxie on 10/26/15.
+ *
+ * 继承Xid，用于获取全局事务id、分支id
  */
 public class TransactionXid implements Xid, Serializable {
 

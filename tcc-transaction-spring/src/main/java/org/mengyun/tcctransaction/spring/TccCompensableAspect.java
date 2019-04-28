@@ -76,6 +76,7 @@ public class TccCompensableAspect implements Ordered {
             throw commitException;
         }
     }
+
     // 分支事务，由于方法调用，会重新进入切面
     // 提供者事务，前置处理【分支事务，会包含TransactionContext信息】
     private void providerMethodProceed(ProceedingJoinPoint pjp, TransactionContext transactionContext) throws Throwable {

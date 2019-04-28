@@ -6,6 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by changmingxie on 10/30/15.
+ *
+ * 记录事务id、状态、附加信息
  */
 public class TransactionContext implements Serializable {
 
