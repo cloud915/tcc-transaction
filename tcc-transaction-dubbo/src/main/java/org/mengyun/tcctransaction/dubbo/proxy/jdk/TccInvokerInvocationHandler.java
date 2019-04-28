@@ -38,10 +38,11 @@ public class TccInvokerInvocationHandler extends InvokerInvocationHandler {
             if (StringUtils.isEmpty(compensable.confirmMethod())) {
                 ReflectionUtils.changeAnnotationValue(compensable, "confirmMethod", method.getName());
                 ReflectionUtils.changeAnnotationValue(compensable, "cancelMethod", method.getName());
+                // 将事务上下文信息传递到注解对象中
                 ReflectionUtils.changeAnnotationValue(compensable, "transactionContextEditor", DubboTransactionContextEditor.class);
                 ReflectionUtils.changeAnnotationValue(compensable, "propagation", Propagation.SUPPORTS);
             }
-
+            // 定义动态切面，加入到invoke实例中
             ProceedingJoinPoint pjp = new MethodProceedingJoinPoint(proxy, target, method, args);
             return FactoryBuilder.factoryOf(ResourceCoordinatorAspect.class).getInstance().interceptTransactionContextMethod(pjp);
         } else {

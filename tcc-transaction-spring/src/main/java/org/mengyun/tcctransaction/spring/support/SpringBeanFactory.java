@@ -10,6 +10,8 @@ import java.util.Map;
 
 /**
  * Created by changmingxie on 11/22/15.
+ *
+ * spring模块封装，在spring-xml配置Bean时对其加载
  */
 public class SpringBeanFactory implements BeanFactory, ApplicationContextAware {
 

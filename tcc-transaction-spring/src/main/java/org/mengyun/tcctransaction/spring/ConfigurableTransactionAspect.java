@@ -9,6 +9,8 @@ import org.springframework.core.Ordered;
 
 /**
  * Created by changmingxie on 10/30/15.
+ *
+ * aop外层包装，spring下的加载、调用
  */
 @Aspect
 public class ConfigurableTransactionAspect extends CompensableTransactionAspect implements Ordered {

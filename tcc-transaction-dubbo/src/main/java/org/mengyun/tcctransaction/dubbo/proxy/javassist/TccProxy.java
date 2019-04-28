@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * TccProxy.
  *
  * @author qian.lei
+ *
+ * 核心目的：在原有dubbo生成Proxy时，将Tcc框架的信息加入proxy中，以用于传递信息
  */
 
 public abstract class TccProxy {
@@ -74,7 +76,7 @@ public abstract class TccProxy {
     public static TccProxy getProxy(ClassLoader cl, Class<?>... ics) {
         if (ics.length > 65535)
             throw new IllegalArgumentException("interface limit exceeded");
-
+        //（1）遍历所有入参接口，以；作为分隔符连接起来，以这个串作为key，从缓存中查找，如果有，说明代理对象已创建成功。
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < ics.length; i++) {
             String itf = ics[i].getName();
@@ -93,6 +95,7 @@ public abstract class TccProxy {
             sb.append(itf).append(';');
         }
 
+        //（1）遍历所有入参接口，以；作为分隔符连接起来，以这个串作为key，从缓存中查找，如果有，说明代理对象已创建成功。
         // use interface class name list as key.
         String key = sb.toString();
 
@@ -106,6 +109,7 @@ public abstract class TccProxy {
             }
         }
 
+        //（1）遍历所有入参接口，以；作为分隔符连接起来，以这个串作为key，从缓存中查找，如果有，说明代理对象已创建成功。
         TccProxy proxy = null;
         synchronized (cache) {
             do {
@@ -128,7 +132,7 @@ public abstract class TccProxy {
             }
             while (true);
         }
-
+        //（2）利用AtomicLong对象自动获取一个long数组来作为生产类的后缀，防止冲突。
         long id = PROXY_CLASS_COUNTER.getAndIncrement();
         String pkg = null;
         TccClassGenerator ccp = null, ccm = null;
@@ -184,23 +188,29 @@ public abstract class TccProxy {
             if (pkg == null)
                 pkg = PACKAGE_NAME;
 
-            // create ProxyInstance class.
+            //（2）利用AtomicLong对象自动获取一个long数组来作为生产类的后缀，防止冲突。
+            //（4）创建代理实现对象ProxyInstance; 类名为：pkg+".proxy"+id=包名+”.proxy“+自增数值。添加静态字段，添加实例对象，添加构造函数。
+            // create ProxyInstance class.创建代理实例类
             String pcn = pkg + ".proxy" + id;
             ccp.setClassName(pcn);
             ccp.addField("public static java.lang.reflect.Method[] methods;");
             ccp.addField("private " + InvocationHandler.class.getName() + " handler;");
+            // 读到这里$1很突兀，猜测是形参中下标为1的参数，非静态方法下标为0是this
             ccp.addConstructor(Modifier.PUBLIC, new Class<?>[]{InvocationHandler.class}, new Class<?>[0], "handler=$1;");
             ccp.addDefaultConstructor();
             Class<?> clazz = ccp.toClass();
             clazz.getField("methods").set(null, methods.toArray(new Method[0]));
 
-            // create TccProxy class.
+            //（2）利用AtomicLong对象自动获取一个long数组来作为生产类的后缀，防止冲突。
+            // create TccProxy class. 创建Tcc代理类
             String fcn = TccProxy.class.getName() + id;
-            ccm = TccClassGenerator.newInstance(cl);
+            ccm = TccClassGenerator.newInstance(cl); // !!!
             ccm.setClassName(fcn);
             ccm.addDefaultConstructor();
             ccm.setSuperClass(TccProxy.class);
             ccm.addMethod("public Object newInstance(" + InvocationHandler.class.getName() + " h){ return new " + pcn + "($1); }");
+            // 重点toClass()方法，在内部 生成的类，添加了Tcc-tarnsaction框架中的主要信息
+            // confirm、cancel 阶段对应方法、配置信息等等
             Class<?> pc = ccm.toClass();
             proxy = (TccProxy) pc.newInstance();
         } catch (RuntimeException e) {

@@ -274,7 +274,8 @@ public final class TccClassGenerator {
                             annot.addMemberValue("propagation", enumMemberValue);
                             annot.addMemberValue("confirmMethod", new StringMemberValue(ctMethod.getName(), constpool));
                             annot.addMemberValue("cancelMethod", new StringMemberValue(ctMethod.getName(), constpool));
-
+                            // 增加类的成员：DubboTransactionContextEditor 作为transactionContextEditor的实现
+                            // 远程通信时，携带事务上下文信息
                             ClassMemberValue classMemberValue = new ClassMemberValue("org.mengyun.tcctransaction.dubbo.context.DubboTransactionContextEditor", constpool);
                             annot.addMemberValue("transactionContextEditor", classMemberValue);
 

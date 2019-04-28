@@ -27,7 +27,7 @@ public class DubboTransactionContextEditor implements TransactionContextEditor {
 
     @Override
     public void set(TransactionContext transactionContext, Object target, Method method, Object[] args) {
-
+        // 向RpcContext中，加入 事务信息、事务上下文
         RpcContext.getContext().setAttachment(TransactionContextConstants.TRANSACTION_CONTEXT, JSON.toJSONString(transactionContext));
     }
 }

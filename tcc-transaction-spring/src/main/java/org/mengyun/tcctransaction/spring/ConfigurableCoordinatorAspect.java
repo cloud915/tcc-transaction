@@ -8,6 +8,8 @@ import org.springframework.core.Ordered;
 
 /**
  * Created by changmingxie on 11/8/15.
+ *
+ * aop外层包装，spring下的加载、调用
  */
 @Aspect
 public class ConfigurableCoordinatorAspect extends ResourceCoordinatorAspect implements Ordered {

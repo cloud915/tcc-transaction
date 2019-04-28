@@ -13,6 +13,10 @@ import java.util.concurrent.Executors;
 
 /**
  * Created by changmingxie on 11/11/15.
+ *
+ *
+ * spring模块封装，在spring-xml配置Bean时对其加载
+ * init 方法做必要参数的实例化、注入
  */
 public class SpringTransactionConfigurator implements TransactionConfigurator {
 
