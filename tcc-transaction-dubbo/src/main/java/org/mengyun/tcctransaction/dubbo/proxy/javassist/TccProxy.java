@@ -119,13 +119,14 @@ public abstract class TccProxy {
                     if (proxy != null)
                         return proxy;
                 }
-
+                // 如果此时正在创建，则等待通知创建完成
                 if (value == PendingGenerationMarker) {
                     try {
                         cache.wait();
                     } catch (InterruptedException e) {
                     }
                 } else {
+                    // 没有正在创建，则自己标识状态，然后开始创建
                     cache.put(key, PendingGenerationMarker);
                     break;
                 }
@@ -137,12 +138,14 @@ public abstract class TccProxy {
         String pkg = null;
         TccClassGenerator ccp = null, ccm = null;
         try {
+            // 创建一个TccClassGenerator实例
             ccp = TccClassGenerator.newInstance(cl);
-
+            // 定义两个集合
             Set<String> worked = new HashSet<String>();
             List<Method> methods = new ArrayList<Method>();
-
+            // 这个for先忽略，加上调用方只传了一个接口类型
             for (int i = 0; i < ics.length; i++) {
+                // 如果接口的修饰符是不是public，找到该接口所在包的名称
                 if (!Modifier.isPublic(ics[i].getModifiers())) {
                     String npkg = ics[i].getPackage().getName();
                     if (pkg == null) {
@@ -152,14 +155,17 @@ public abstract class TccProxy {
                             throw new IllegalArgumentException("non-public interfaces from different packages");
                     }
                 }
+                // 向TccClassGenerator中添加接口
                 ccp.addInterface(ics[i]);
 
+                // 遍历 接口的所有方法：根据接口的方法，创建对应的一套代理方法,并添加进TccClassGenerator实例中。
                 for (Method method : ics[i].getMethods()) {
+                    // 以接口描述为唯一标识，相同标识的方法只处理一个
                     String desc = ReflectUtils.getDesc(method);
                     if (worked.contains(desc))
                         continue;
                     worked.add(desc);
-
+                    // 获取本次遍历的方法的 返回值、参数类型列表，后面生成动态代码
                     int ix = methods.size();
                     Class<?> rt = method.getReturnType();
                     Class<?>[] pts = method.getParameterTypes();
@@ -170,13 +176,27 @@ public abstract class TccProxy {
                     code.append(" Object ret = handler.invoke(this, methods[" + ix + "], args);");
                     if (!Void.TYPE.equals(rt))
                         code.append(" return ").append(asArgument(rt, "ret")).append(";");
-
+                    /**
+                     * 生成的code内容；
+                     * Object[] args = new Object[method的参数个数];
+                     * args[0] = ($w)$1;
+                     * ...
+                     * arg[method.parameterTypes().length] = ($w)$length+1;
+                     *
+                     * Object ret = handler.invoke(this,method,args);// 用handler执行method自身逻辑
+                     * return ret;// asArgument做空值处理
+                     *
+                     */
+                    // 将methods加入集合
                     methods.add(method);
 
                     StringBuilder compensableDesc = new StringBuilder();
 
                     Compensable compensable = method.getAnnotation(Compensable.class);
 
+                    // 如果发放存在注解，向ccp添加方法时，标记出来；
+                    // addMethod内部实现，就是代码生成器一样，拼接出方法；
+                    // 如果有@Compensable注解，则会将代理方法加入到CompensableMethods的集合
                     if (compensable != null) {
                         ccp.addMethod(true, method.getName(), method.getModifiers(), rt, pts, method.getExceptionTypes(), code.toString());
                     } else {
@@ -184,6 +204,7 @@ public abstract class TccProxy {
                     }
                 }
             }
+            // 到这里，ccp中已经包含了指定接口的所有方法的代理了。并得到了一个mehtods列表
 
             if (pkg == null)
                 pkg = PACKAGE_NAME;
@@ -191,28 +212,33 @@ public abstract class TccProxy {
             //（2）利用AtomicLong对象自动获取一个long数组来作为生产类的后缀，防止冲突。
             //（4）创建代理实现对象ProxyInstance; 类名为：pkg+".proxy"+id=包名+”.proxy“+自增数值。添加静态字段，添加实例对象，添加构造函数。
             // create ProxyInstance class.创建代理实例类
-            String pcn = pkg + ".proxy" + id;
+            String pcn = pkg + ".proxy" + id;// 按接口包名或默认包名，创建一个代理类的全路径
             ccp.setClassName(pcn);
+            // 定义 成员变量、带参构造函数、默认构造函数
             ccp.addField("public static java.lang.reflect.Method[] methods;");
-            ccp.addField("private " + InvocationHandler.class.getName() + " handler;");
+            ccp.addField("private " + InvocationHandler.class.getName() + " handler;");// 与上面方法中的handler对应
             // 读到这里$1很突兀，猜测是形参中下标为1的参数，非静态方法下标为0是this
-            ccp.addConstructor(Modifier.PUBLIC, new Class<?>[]{InvocationHandler.class}, new Class<?>[0], "handler=$1;");
+            ccp.addConstructor(Modifier.PUBLIC, new Class<?>[]{InvocationHandler.class}, new Class<?>[0], "handler=$1;");// 对成员handler赋值，只有一个参数
             ccp.addDefaultConstructor();
             Class<?> clazz = ccp.toClass();
-            clazz.getField("methods").set(null, methods.toArray(new Method[0]));
+            clazz.getField("methods").set(null, methods.toArray(new Method[0]));// 给自定义的类中成员methods赋值为methods列表的第一个元素
+
+            // 至此TccClassGenerator ccp的定义已完成。
 
             //（2）利用AtomicLong对象自动获取一个long数组来作为生产类的后缀，防止冲突。
             // create TccProxy class. 创建Tcc代理类
             String fcn = TccProxy.class.getName() + id;
-            ccm = TccClassGenerator.newInstance(cl); // !!!
+            // 创建一个TccClassGenerator实例,设置类名、默认构造函数、父类
+            ccm = TccClassGenerator.newInstance(cl);
             ccm.setClassName(fcn);
             ccm.addDefaultConstructor();
-            ccm.setSuperClass(TccProxy.class);
+            ccm.setSuperClass(TccProxy.class); // 这里是来实现TccProxy抽象类的
+            // 实现抽象方法newInstance(InvocationHandler handler),返回的是ccp的实例（用的pcn就是ccp的全类名）
             ccm.addMethod("public Object newInstance(" + InvocationHandler.class.getName() + " h){ return new " + pcn + "($1); }");
             // 重点toClass()方法，在内部 生成的类，添加了Tcc-tarnsaction框架中的主要信息
-            // confirm、cancel 阶段对应方法、配置信息等等
-            Class<?> pc = ccm.toClass();
-            proxy = (TccProxy) pc.newInstance();
+            // confirm、cancel 阶段对应方法、配置信息等等；这些是通过compensableMethods收集的信息创建的
+            Class<?> pc = ccm.toClass(); // 【TODO 生成Class时，将@compensable注解信息生成，并添加到对应method的代理方法中】
+            proxy = (TccProxy) pc.newInstance();// 创建代理类的实例，注意：这里的newInstance与代理类中的不是同一个
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

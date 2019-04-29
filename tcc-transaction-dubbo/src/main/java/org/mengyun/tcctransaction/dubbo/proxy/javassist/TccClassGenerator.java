@@ -44,7 +44,7 @@ public final class TccClassGenerator {
     public static ClassPool getClassPool(ClassLoader loader) {
         if (loader == null)
             return ClassPool.getDefault();
-
+        // 从POOL_MAP资源池，获取pool
         ClassPool pool = POOL_MAP.get(loader);
         if (pool == null) {
             pool = new ClassPool(true);
