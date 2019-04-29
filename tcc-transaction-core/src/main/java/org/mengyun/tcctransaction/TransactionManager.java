@@ -16,7 +16,7 @@ public class TransactionManager {
     static final Logger logger = Logger.getLogger(TransactionManager.class.getSimpleName());
     // 去掉TransactionConfigurator，直接使用TransactionRepository
     private TransactionRepository transactionRepository;
-    // 由栈ThreadLocal<Deque<Transaction>> 代替ThreadLocal<Transaction>；作用一样
+    // 由队ThreadLocal<Deque<Transaction>> 代替ThreadLocal<Transaction>；作用一样
     private static final ThreadLocal<Deque<Transaction>> CURRENT = new ThreadLocal<Deque<Transaction>>();
 
     public void setTransactionRepository(TransactionRepository transactionRepository) {
@@ -27,7 +27,7 @@ public class TransactionManager {
         // 开启事务，持久化、缓存
         Transaction transaction = new Transaction(TransactionType.ROOT);
         transactionRepository.create(transaction);
-        // 入栈，且
+        // 入队，且
         registerTransaction(transaction);
     }
 
@@ -45,7 +45,7 @@ public class TransactionManager {
 
         if (transaction != null) {
             transaction.changeStatus(TransactionStatus.valueOf(transactionContext.getStatus()));
-            // 入栈，propagationExistBegin执行完成后，后面会带有出栈操作
+            // 入队，propagationExistBegin执行完成后，后面会带有出队操作
             registerTransaction(transaction);
         } else {
             throw new NoExistedTransactionException();
@@ -96,7 +96,7 @@ public class TransactionManager {
             throw new CancellingException(rollbackException);
         }
     }
-    // 入栈，方法调用与出栈成对出现
+    // 入队，方法调用与出队成对出现
     private void registerTransaction(Transaction transaction) {
 
         if (CURRENT.get() == null) {
@@ -105,7 +105,7 @@ public class TransactionManager {
 
         CURRENT.get().push(transaction);
     }
-    // 出栈，方法调用与入栈成对出现
+    // 出队，方法调用与入队成对出现
     public void cleanAfterCompletion() {
         CURRENT.get().pop();
     }

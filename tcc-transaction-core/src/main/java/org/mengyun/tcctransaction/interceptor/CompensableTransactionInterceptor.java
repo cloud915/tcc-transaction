@@ -62,11 +62,8 @@ public class CompensableTransactionInterceptor {
 
 
     private Object rootMethodProceed(ProceedingJoinPoint pjp) throws Throwable {
-
         Object returnValue = null;
-
         try {
-
             transactionManager.begin();
 
             try {
@@ -78,18 +75,14 @@ public class CompensableTransactionInterceptor {
             }
 
             transactionManager.commit();
-
         } finally {
             transactionManager.cleanAfterCompletion();
         }
-
         return returnValue;
     }
 
     private Object providerMethodProceed(ProceedingJoinPoint pjp, TransactionContext transactionContext) throws Throwable {
-
         try {
-
             switch (TransactionStatus.valueOf(transactionContext.getStatus())) {
                 case TRYING:
                     transactionManager.propagationNewBegin(transactionContext);
@@ -103,7 +96,6 @@ public class CompensableTransactionInterceptor {
                     }
                     break;
                 case CANCELLING:
-
                     try {
                         transactionManager.propagationExistBegin(transactionContext);
                         transactionManager.rollback();
@@ -112,11 +104,9 @@ public class CompensableTransactionInterceptor {
                     }
                     break;
             }
-
         } finally {
             transactionManager.cleanAfterCompletion();
         }
-
         Method method = ((MethodSignature) (pjp.getSignature())).getMethod();
 
         return ReflectionUtils.getNullValue(method.getReturnType());
